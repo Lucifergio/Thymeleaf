@@ -2,6 +2,7 @@ package ru.gb.thymeleafprepare;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.gb.thymeleafprepare.entity.Product;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/product")
+@Transactional
 public class ProductController {
 
     private final ProductService productService;
@@ -47,10 +49,23 @@ public class ProductController {
         return "redirect:/product/all";
     }
 
-//    @GetMapping("/delete")
-//    public String deleteById(@RequestParam(name = "id") Long id) {
-//        productService.deleteById(id);
-//        return "redirect:/product/all";
-//    }
+    @GetMapping("/cartList")
+    public String cart(Model model) {
+        model.addAttribute("prodCart", productService.allProductInCart());
+        return "cartList";
+    }
+
+    @GetMapping("/addProductInCart/{id}")
+    public String addProduct(@PathVariable(name = "id") Long id) {
+        productService.addProductInCart(id);
+        return "redirect:/product/all";
+    }
+
+    @GetMapping("/deleteProduct/{id}")
+    public String deleteFromCart(@PathVariable(name = "id") Long id) {
+        productService.deleteFromCartById(id);
+        return "redirect:/product/cartList";
+    }
+
 
 }
