@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Setter
@@ -20,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table (name = "product")
+@Table(name = "product")
 @EntityListeners(AuditingEntityListener.class)
 public class Product {
     @Id
@@ -33,9 +34,6 @@ public class Product {
     private BigDecimal cost;
     @Column(name = "manufacture_date")
     private LocalDate manufactureDate;
-//    @ManyToOne
-//    @JoinColumn(name = "manufacturer_id")
-//    private Manufacturer manufacturer;
 
     @Version
     @Column(name = "VERSION")
@@ -57,11 +55,11 @@ public class Product {
     @Column(name = "status")
     private Status status;
 
-//    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-//    @JoinTable(name = "cart_product",
-//    joinColumns = @JoinColumn(name = "product_id"),
-//    inverseJoinColumns = @JoinColumn(name = "cart_id"))
-//    private Set<Cart> carts;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "cart_product",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "cart_id"))
+    private List<Cart> carts;
 
     @Override
     public String toString() {
@@ -70,7 +68,6 @@ public class Product {
                 ", title='" + title + '\'' +
                 ", cost=" + cost +
                 ", manufactureDate=" + manufactureDate +
-//                ", manufacturer=" + manufacturer.getName() +
                 "}\n";
     }
 }

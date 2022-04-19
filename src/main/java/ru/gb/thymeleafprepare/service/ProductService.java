@@ -2,6 +2,8 @@ package ru.gb.thymeleafprepare.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -10,18 +12,23 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.gb.thymeleafprepare.dao.ProductDao;
+import ru.gb.thymeleafprepare.dao.cartDao;
+import ru.gb.thymeleafprepare.entity.Cart;
 import ru.gb.thymeleafprepare.entity.Product;
 import ru.gb.thymeleafprepare.entity.enums.Status;
 
-import java.util.List;
-import java.util.Optional;
+import javax.persistence.JoinTable;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProductService {
     private final ProductDao productDao;
+    private final cartDao cartDao;
 
+    //    private final Long DEFAULT_CART;
     @Transactional(propagation = Propagation.NEVER, isolation = Isolation.DEFAULT)
     public long count() {
         System.out.println(productDao.count());
@@ -64,25 +71,28 @@ public class ProductService {
         }
     }
 
-    public void disable(Long id) {
-        Optional<Product> product = productDao.findById(id);
-        product.ifPresent(p -> {
-            p.setStatus(Status.DISABLED);
-            productDao.save(p);
-        });
+    @Transactional
+    public List<Product> allProductInCart() {
+        return cartDao.getById(1L).getProducts();
     }
 
-    public List<Product> findAll(int page, int size) {
-        return productDao.findAllByStatus(Status.ACTIVE, PageRequest.of(page, size));
+    public Product addProductInCart(Long id) {
+        Cart cart = cartDao.getById(1L);
+
+        Product product = productDao.getById(id);
+        cart.addProduct(product);
+        cartDao.save(cart);
+        return product;
     }
 
-    public List<Product> findAllSortedById() {
-        return productDao.findAllByStatus(Status.ACTIVE, Sort.by("id"));
+    public void deleteFromCartById(Long id) {
+        Cart cart = cartDao.getById(1L);
+        for (Product prod : cart.getProducts()) {
+            if (prod.getId().equals(id)) {
+                cart.getProducts().remove(prod);
+                return;
+            }
+        }
     }
-
-    public List<Product> findAllSortedById(int page, int size) {
-        return productDao.findAllByStatus(Status.ACTIVE, PageRequest.of(page, size, Sort.by("id")));
-    }
-
 
 }
